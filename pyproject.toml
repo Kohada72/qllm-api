@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "qllm-api"
+version = "0.1.0"
+description = "FastAPI application for QLLM"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.110.0"
+uvicorn = {extras = ["standard"], version = "^0.27.1"}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

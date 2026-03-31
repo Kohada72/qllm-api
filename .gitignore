@@ -1,0 +1,16 @@
+# --- Docker ---
+.env
+docker-compose.override.yml
+
+# --- Persistent Data ---
+postgres_data/
+mysql_data/
+redis_data/
+
+# --- Logs ---
+*.log
+docker-logs/
+
+# --- Others ---
+__pycache__
+.DS_Store
