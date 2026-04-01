@@ -1,6 +1,17 @@
+from enum import Enum
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from src.schemas.response import ExperimentResponse
+
+
+
+class JobStatus(str, Enum):
+    """ジョブの状態を定義する列挙型"""
+    PENDING = "pending"     # 実行待ち
+    RUNNING = "running"     # 実行中
+    COMPLETED = "completed" # 完了
+    FAILED = "failed"       # 失敗
 
 
 class JobAcceptedResponse(BaseModel):
@@ -13,5 +24,8 @@ class JobStatusResponse(BaseModel):
     job_id: str
     status: str = Field(..., description="ステータス (pending/running/completed/failed)")
     progress: Optional[float] = Field(None, description="進捗率 (0.0~1.0)")
-    result: Optional[dict] = None 
+
+
+class JobDetailResponse(JobStatusResponse):
+    result: Optional[ExperimentResponse] = None
     error: Optional[str] = None
