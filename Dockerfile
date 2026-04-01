@@ -1,16 +1,17 @@
-FROM python:3.11.15-slim
-ENV PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.7.1 \
-    POETRY_VIRTUALENVS_CREATE=false
+FROM python:3.12-slim
 
-WORKDIR /src
+ENV PYTHONUNBUFFERED=1 \
+    POETRY_VERSION=1.8.2 \
+    POETRY_VIRTUALENVS_CREATE=false \
+    APP_HOME=/app
+
+WORKDIR $APP_HOME
 
 RUN pip install "poetry==$POETRY_VERSION"
 
 COPY pyproject.toml poetry.lock* ./
-
 RUN if [ -f pyproject.toml ]; then poetry install --no-root --no-interaction; fi
 
 COPY . .
 
-ENTRYPOINT ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+ENTRYPOINT ["poetry", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
