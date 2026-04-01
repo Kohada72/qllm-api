@@ -1,16 +1,24 @@
 {
-    "name": "QLLM-API Development",
+    "name": "QLLM-API & GUI Development",
     "dockerComposeFile": "../docker-compose.yml",
-    "service": "qllm-api",
-    "workspaceFolder": "/src",
+    "service": "api", 
+    "workspaceFolder": "/app",
     "customizations": {
         "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.terminal.activateEnvInSelectedTerminal": true,
+                "python.analysis.extraPaths": ["/app"]
+            },
             "extensions": [
                 "ms-python.python",
+                "ms-python.vscode-pylance",
                 "njpwerner.autodocstring",
-                "tamasfe.even-better-toml"
+                "tamasfe.even-better-toml",
+                "charliermarsh.ruff"
             ]
         }
     },
-    "remoteUser": "root"
+    "remoteUser": "root",
+    "shutdownAction": "stopCompose"
 }
