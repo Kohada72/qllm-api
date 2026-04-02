@@ -24,6 +24,7 @@ class JobStatusResponse(BaseModel):
     job_id: str
     status: str = Field(..., description="ステータス (pending/running/completed/failed)")
     progress: Optional[float] = Field(None, description="進捗率 (0.0~1.0)")
+    model_name: str = Field(..., description="使用したモデル名")
 
 
 class JobDetailResponse(JobStatusResponse):

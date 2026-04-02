@@ -1,64 +1,55 @@
-## 現状のディレクトリ構想
-'''Plaintext
-.
-├── .env
-├── .env.example
-├── .gitignore
-├── README.md
-├── docker-compose.yml    # APIとGUIを繋ぐオーケストレーション
-├── pyproject.toml        # Poetryの依存関係管理
-│
-├── api/                  # FastAPI本体
-│   ├── main.py           # アプリの起動エントリーポイント
-│   ├── core/
-│   │   └── config.py     # 設定管理、共通定数
-│   ├── routers/
-│   │   └── experiments.py
-│   ├── schemas/
-│   │   ├── job.py        # 出力：ジョブを投げた直後のフィードバック
-│   │   ├── request.py    # 入力：LLM/量子パラメータのグループ化
-│   │   └── response.py   # 出力：結果の構造化
-│   └── services/
-│       ├── llm_engine.py     # LLMの推論処理
-│       └── quantum_engine.py # PennyLane/QTHA.pyのロジック
-│
-├── gui/                  # Streamlit本体
-│   ├── main.py           # 画面構成とAPI呼び出し
-│   └── components/       # 再利用可能なUIパーツ（グラフ表示等）
-│
-├── models/               # LLMモデルウェイト保存用（Git LFSまたは手動配置）
-│
-└── tests/                # 自動テスト（pytest）
-    └── test_api.py       # 前の手順で作ったAsyncClientによるテスト
+# QLLM Experiment Control System
 
+量子計算（Quantum Neural Networks）を組み込んだ大規模言語モデル（LLM）の学習実験を管理・可視化するためのアプリケーションです。
 
+## 概要
+
+本システムは、LLMのファインチューニングにおける実験パラメータの管理、ジョブの実行、および学習結果の可視化を一元化することを目的としています。研究ワークフローにおける実験履歴の保存と、解析用グラフの出力を容易にします。
+
+> [!NOTE]  
+> **コアロジックについて** > バックエンドの量子計算（QLLM）エンジンおよび学習処理の実装は、研究の事情により本リポジトリでは**モック（ダミーロジック）**に差し替えられています。
+
+## 主な機能
+
+- **実験設定と投入**: モデル名、学習率、量子レイヤー数などのパラメータをGUIから設定し、ジョブを投入。
+- **非同期ジョブ管理**: 学習処理をバックグラウンドで実行し、他の操作を妨げずに進捗を監視。
+- **実験履歴の閲覧**: 過去に実行したジョブのステータス、進捗、パラメータを一覧表示。
+- **結果の可視化と出力**: 学習曲線（Loss）をMatplotlibで描画し、解析用のPNG画像としてダウンロード。
+
+## 技術スタック
+
+- **Frontend**: Streamlit
+- **Backend**: FastAPI (Python 3.12)
+- **Container**: Docker / Docker Compose
+- **Package Management**: Poetry
+
+## ディレクトリ構成
+
+```text
 .
-|____Dockerfile
-|____pyproject.toml
-|____models
-|____.devcontainer
-|____README.md
-|____.dockerignore
-|____.gitignore
-|____.env
-|____docker-compose.yml
-|____poetry.lock
-|____.git
-|____src
-  |____routers
-  | |______init__.py
-  | |____experiments.py
-  |____core
-  | |____config.py
-  | |______init__.py
-  |______init__.py
-  |____schemas
-  | |____job.py
-  | |____request.py
-  | |______init__.py
-  | |____response.py
-  |____main.py
-  |____services
-    |____llm_engine.py
-    |______init__.py
-'''
+├── docker-compose.yml
+├── Dockerfile             # API用
+├── gui/
+│   ├── Dockerfile         # GUI用
+│   ├── main.py            # Streamlitメインロジック
+│   └── api_client.py      # API通信用クライアント
+├── src/
+│   ├── main.py            # FastAPIエントリーポイント
+│   ├── routers/           # APIエンドポイント定義
+│   ├── schemas/           # Pydanticモデル（型定義）
+│   └── services/          # 実験実行エンジン（Mock実装）
+└── models/                # データ保存用ボリューム
+```
+
+## セットアップと起動
+
+Dockerがインストールされている環境で、以下のコマンドを実行してください。
+
+```bash
+# ビルドと起動
+docker compose up -d --build
+```
+
+起動後、以下のURLからアクセス可能です。
+- **GUI**: `http://localhost:8501`
+- **API Docs (Swagger UI)**: `http://localhost:8000/docs`
