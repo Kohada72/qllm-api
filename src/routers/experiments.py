@@ -37,6 +37,7 @@ async def create_experiment(
         "job_id": job_id,
         "status": JobStatus.PENDING,
         "progress": 0.0,
+        "model_name": request.train_params.model_name,
         "result": None
     }
 
