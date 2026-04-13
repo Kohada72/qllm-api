@@ -14,3 +14,4 @@ docker-logs/
 # --- Others ---
 __pycache__
 .DS_Store
+pvt.*
