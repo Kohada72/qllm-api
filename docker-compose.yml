@@ -14,11 +14,11 @@ services:
       context: .
       dockerfile: gui/Dockerfile
     volumes:
-      - .:/app
+      - ./gui:/app
+    env_file:
+      - .env
     ports:
       - "8501:8501"
-    environment:
-      - API_URL=http://api:8000
     depends_on:
       - api
 
