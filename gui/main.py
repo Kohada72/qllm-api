@@ -1,26 +1,29 @@
-import streamlit as st
 import os
 import io
+import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
+from dotenv import load_dotenv
 from api_client import QLLMApiClient
 
 
 
 # --- 初期設定 ---
-API_URL = os.getenv("API_URL", "http://api:8000")
-client = QLLMApiClient(API_URL)
+load_dotenv()
+
+api_url = os.getenv("API_URL")
+client = QLLMApiClient(api_url)
 
 st.set_page_config(page_title="QLLM Control Panel", layout="wide")
 st.title("🧪 Quantum-LLM Experiment Control")
 
 # タブの定義
-tab_run, tab_history = st.tabs(["🚀 Run Experiment", "📜 Experiment History"])
+tab_run, tab_history = st.tabs(["Run Experiment", "Experiment History"])
 
 # --- Tab 1: ジョブのポスト操作 ---
 with tab_run:
-    st.header("New Experiment Configuration")
+    st.header("Experiment Configuration")
     col1, col2 = st.columns(2)
     
     with col1:

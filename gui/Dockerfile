@@ -16,4 +16,4 @@ RUN poetry install --no-root --only main
 COPY gui/ .
 
 ENV PORT_NUMBER=8501
-ENTRYPOINT ["poetry", "run", "streamlit", "run", "gui/main.py", "--server.address", "0.0.0.0"]
+ENTRYPOINT ["poetry", "run", "streamlit", "run", "main.py", "--server.address", "0.0.0.0"]

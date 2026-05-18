@@ -1,10 +1,18 @@
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status
-from typing import List, Dict
+"""
+メインルータ
+"""
+
 import uuid
+from typing import List
+from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.schemas.request import PredictionRequest
-from src.schemas.job import JobAcceptedResponse, JobStatusResponse, JobDetailResponse, JobStatus
+from src.schemas.response import AcceptedResponse, StatusResponse, DetailResponse
+from src.schemas.job import JobModel, JobStatus
 from src.services.llm_engine import run_training_process
+from .database import get_session
 
 
 
@@ -13,64 +21,63 @@ router = APIRouter(
     tags=["Experiments"],
 )
 
-# 簡易DB: dev
-jobs_store: Dict[str, dict] = {}
-
-
 @router.post(
     "", 
-    response_model=JobAcceptedResponse,
+    response_model=AcceptedResponse,
     status_code=status.HTTP_202_ACCEPTED
 )
 async def create_experiment(
     request: PredictionRequest,
-    background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    session: AsyncSession = Depends(get_session)
 ):
     """
-    学習・実験ジョブを発行します。
-    重い処理はバックグラウンドで実行され、即座にJob IDを返します。
+    ジョブの発行
+    バックグラウンドで実行しアクセプトメッセージが返る
     """
-    job_id = str(uuid.uuid4())
-    
-    # 初期ステータスを保存
-    jobs_store[job_id] = {
-        "job_id": job_id,
-        "status": JobStatus.PENDING,
-        "progress": 0.0,
-        "model_name": request.train_params.model_name,
-        "result": None
-    }
+    new_job_id = str(uuid.uuid4())
 
-    # バックグラウンドタスクの登録
-    # 実際の学習ロジック（run_training_process）を非同期で走らせる
-    background_tasks.add_task(
-        run_training_process,
-        job_id,
-        request,
-        jobs_store
+    new_job = JobModel(
+        job_id=new_job_id,
+        status=JobStatus.WAITING,
+        **request.model_dump(exclude={"train_params", "model_params"}),
+        train_params=request.train_params,
+        model_params=request.model_params
     )
 
-    return JobAcceptedResponse(job_id=job_id)
+    session.add(new_job)
+    await session.commit()
+    await session.refresh(new_job)
+
+    background_tasks.add_task(
+        run_training_process,
+        new_job
+    )
+
+    return AcceptedResponse(job_id=new_job_id)
 
 
-@router.get("", response_model=List[JobStatusResponse])
-async def list_experiments():
+@router.get("", response_model=List[StatusResponse])
+async def list_experiments(session: AsyncSession = Depends(get_session)):
     """
-    過去に発行したジョブの一覧を取得します。
+    ジョブの一覧を取得
     """
-    return [JobStatusResponse(**data) for data in jobs_store.values()]
+    statement = select(JobModel)
+    result = await session.exec(statement)
+    jobs = result.all()
+    return jobs
 
 
-@router.get("/{job_id}", response_model=JobDetailResponse)
-async def get_experiment_status(job_id: str):
+@router.get("/{job_id}", response_model=DetailResponse)
+async def get_experiment_status(job_id: str, session: AsyncSession = Depends(get_session)):
     """
-    指定したJob IDの進捗状況や結果を取得します。
+    指定したJob IDの進捗状況や結果を取得
     """
-    job_data = jobs_store.get(job_id)
-    if not job_data:
+    job = await session.get(JobModel, job_id)
+    if not job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="ジョブが見つかりません"
         )
     
-    return JobDetailResponse(**job_data)
+    return job
