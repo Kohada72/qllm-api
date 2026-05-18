@@ -1,24 +1,33 @@
+"""
+全てのレスポンスを定義
+"""
+
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+from .job import JobStatus, TrainParams, ModelParams, TrainingStep, EvaluationResults  #.jobと指定するとモジュールの移動で壊れない
 
 
-class TrainingStep(BaseModel):
-    epoch: float = Field(..., description="エポック数")
-    loss: float = Field(..., description="学習損失")
-    learning_rate: float = Field(..., description="学習率")
-    grad_norm: Optional[float] = Field(None, description="勾配ノルム")
+
+class AcceptedResponse(BaseModel):
+    """受付返答用"""
+    job_id: str = Field(..., description="Jobの識別id")
+    exp_title: str = Field(..., description="Jobの識別タイトル")
+    status: JobStatus = Field(JobStatus.WAITING, description="Jobの状態")
 
 
-class EvaluationResults(BaseModel):
-    eval_loss: float = Field(..., description="評価損失")
-    train_steps_per_second: float = Field(..., description="1秒あたりのステップ処理数")
-    perplexity: float = Field(..., description="Perplexity")
-    total_training_time: float = Field(..., description="合計学習時間(分)")
+class StatusResponse(BaseModel):
+    """一覧表示用"""
+    job_id: str
+    exp_title: str
+    status: JobStatus = Field(JobStatus.WAITING, description="ステータス")
+    progress: Optional[float] = Field(None, description="進捗率 (0.0~1.0)")
+    ppl: Optional[float] = Field(None, description="Perplexity")
 
 
-class ExperimentResponse(BaseModel):
-    status: str = Field("success", description="処理ステータス")
-    
-    history: List[TrainingStep] = Field(..., description="学習過程")
-    evaluation: EvaluationResults = Field(..., description="評価結果")
+class DetailResponse(StatusResponse):
+    """詳細表示用"""
+    train_params: TrainParams = Field(..., description="トレーニングパラメータ")
+    model_params: ModelParams = Field(..., description="モデルパラメータ")
+    history: List[TrainingStep] = Field(list, description="学習過程")
+    evaluation: Optional[EvaluationResults] = Field(None, description="最終結果")

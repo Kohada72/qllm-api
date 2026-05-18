@@ -1,6 +1,5 @@
 import asyncio
 import random
-from datetime import datetime
 
 from src.schemas.request import PredictionRequest
 from src.schemas.response import ExperimentResponse, TrainingStep, EvaluationResults
@@ -24,7 +23,7 @@ async def run_training_process(job_id: str, request: PredictionRequest, jobs_sto
         for epoch in range(1, epochs + 1):
             # 実際の学習の代わりにスリープ（開発中は短めに設定）
             # 本番ではここが 1エポック数分〜数十分になる
-            await asyncio.sleep(2) 
+            await asyncio.sleep(2)
             
             # 進捗率の計算
             progress = epoch / epochs
