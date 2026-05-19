@@ -8,7 +8,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.schemas.request import PredictionRequest
+from src.schemas.request import PredictionRequest, JobUpdateRequest
 from src.schemas.response import AcceptedResponse, StatusResponse, DetailResponse
 from src.schemas.job import JobModel, JobStatus
 from src.services.llm_engine import run_training_process
@@ -41,8 +41,8 @@ async def create_experiment(
         job_id=new_job_id,
         status=JobStatus.WAITING,
         **request.model_dump(exclude={"train_params", "model_params"}),
-        train_params=request.train_params,
-        model_params=request.model_params
+        train_params=request.train_params.model_dump(),
+        model_params=request.model_params.model_dump()
     )
 
     session.add(new_job)
@@ -51,10 +51,14 @@ async def create_experiment(
 
     background_tasks.add_task(
         run_training_process,
+        new_job_id,
         new_job
     )
 
-    return AcceptedResponse(job_id=new_job_id)
+    return AcceptedResponse(
+        job_id=new_job_id,
+        exp_title=new_job.exp_title
+    )
 
 
 @router.get("", response_model=List[StatusResponse])
@@ -80,4 +84,28 @@ async def get_experiment_status(job_id: str, session: AsyncSession = Depends(get
             detail="ジョブが見つかりません"
         )
     
+    return job
+
+
+@router.patch("/{job_id}", response_model=JobModel)
+async def update_job_status(
+    job_id: str,
+    update_data: JobUpdateRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    engineからJobの結果を更新する
+    """
+    job = await session.get(JobModel, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="ジョブが見つかりません")
+    
+    update_dict = update_data.model_dump(exclude_unset=True)
+    for key, val in update_dict.items():
+        setattr(job, key, val)
+    
+    session.add(job)
+    await session.commit()
+    await session.refresh(job)
+
     return job
