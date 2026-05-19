@@ -5,7 +5,7 @@ Jobの定義
 from enum import Enum
 from pydantic import BaseModel, Field
 from sqlmodel import SQLModel, Field as SQLField
-from sqlalchemy import Column, JSON
+from sqlalchemy import JSON
 from typing import List, Optional
 
 
@@ -63,7 +63,7 @@ class JobModel(SQLModel, table=True):
     progress: Optional[float] = SQLField(default=0.0, description="進捗率 (0.0~1.0)")
     ppl: Optional[float] = SQLField(default=None, description="Perplexity")
 
-    train_params: TrainParams = SQLField(default_factory=TrainParams, sa_column=Column(JSON))
-    model_params: ModelParams = SQLField(default_factory=ModelParams, sa_column=Column(JSON))
-    history: List[TrainingStep] = SQLField(default_factory=list, sa_column=Column(JSON))
-    evaluation: Optional[EvaluationResults] = SQLField(default=None, sa_column=Column(JSON))
+    train_params: TrainParams = SQLField(default_factory=TrainParams, sa_type=JSON)
+    model_params: ModelParams = SQLField(default_factory=ModelParams, sa_type=JSON)
+    history: List[TrainingStep] = SQLField(default_factory=list, sa_type=JSON)
+    evaluation: Optional[EvaluationResults] = SQLField(default=None, sa_type=JSON)

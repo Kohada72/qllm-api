@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
@@ -31,7 +32,7 @@ app.dependency_overrides[get_session] = get_test_session
 # ==========================================
 # 2. テスト環境のセットアップ (Fixture)
 # ==========================================
-@pytest.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True)
 async def setup_test_db():
     """各テストの前にテーブルを作成し、終わったら削除する"""
     async with test_engine.begin() as conn:
@@ -57,18 +58,18 @@ async def test_create_and_list_jobs():
         # ① ジョブ作成のPOSTリクエストを送信
         mock_payload = {
             "exp_title": "Test Experiment",
-            "train_config": {
+            "train_params": {
                 "model_name": "test-model",
                 "dataset": "test-data",
                 "epochs": 5
             },
-            "model_config": {
+            "model_params": {
                 "use_qnn": True
             }
         }
         
         post_response = await client.post("/experiments", json=mock_payload)
-        assert post_response.status_code == 200
+        assert post_response.status_code == 202
         
         # レスポンスからIDを取得
         created_job = post_response.json()
