@@ -4,15 +4,15 @@
 
 import uuid
 from typing import List
-from fastapi import APIRouter, BackgroundTasks, HTTPException, status, Depends
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Response, status, Depends
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.schemas.request import PredictionRequest, JobUpdateRequest
 from src.schemas.response import AcceptedResponse, StatusResponse, DetailResponse
 from src.schemas.job import JobModel, JobStatus
-from src.services.llm_engine import run_training_process
-from .database import get_session
+from src.services.handler import run_training_process
+from ..database import get_session
 
 
 
@@ -21,10 +21,7 @@ router = APIRouter(
     tags=["Experiments"],
 )
 
-@router.post(
-    "", 
-    response_model=AcceptedResponse,
-    status_code=status.HTTP_202_ACCEPTED
+@router.post("", response_model=AcceptedResponse, status_code=status.HTTP_202_ACCEPTED
 )
 async def create_experiment(
     request: PredictionRequest,
@@ -52,7 +49,7 @@ async def create_experiment(
     background_tasks.add_task(
         run_training_process,
         new_job_id,
-        new_job
+        request
     )
 
     return AcceptedResponse(
@@ -109,3 +106,17 @@ async def update_job_status(
     await session.refresh(job)
 
     return job
+
+
+@router.delete("/{job_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_experiment(job_id: str, session: AsyncSession = Depends(get_session)):
+    """
+    ジョブの削除
+    """
+    job = await session.get(JobModel, job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="ジョブが見つかりません")
+    
+    await session.delete(job)
+    await session.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

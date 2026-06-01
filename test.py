@@ -8,7 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 # 自分のプロジェクトからインポート
 from src.main import app         # FastAPIのインスタンス
-from src.routers.database import get_session  # 本番用の依存関数
+from src.database import get_session  # 本番用の依存関数
 
 # ==========================================
 # 1. テスト用データベースの準備
