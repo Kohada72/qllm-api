@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 
 ENV POETRY_VERSION=1.8.2
-ENV PYTHON_BUF=1
+ENV PYTHONUNBUFFERED=1
 
-RUN pip install "poetry==$POETRY_VERSION"
+RUN pip install --no-cache-dir "poetry==${POETRY_VERSION}" --break-system-packages
 
 WORKDIR /app
 
