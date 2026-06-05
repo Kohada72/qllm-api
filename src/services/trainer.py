@@ -1,11 +1,10 @@
-import asyncio
 import random
 import time
 from typing import Callable, Awaitable, Dict, Any
 
 
 
-async def execute_training(
+def execute_training(
     epochs: int,
     lr: float,
     model_name: str,
@@ -18,7 +17,7 @@ async def execute_training(
 
     # 学習ループ
     for epoch in range(1, epochs + 1):
-        await asyncio.sleep(2)  # 重い学習処理をシミュレート
+        time.sleep(2)  # 重い学習処理をシミュレート
 
         # メトリクスの計算
         loss = max(0.1, 4.0 - (epoch * 0.35) + random.uniform(-0.1, 0.1))
@@ -27,7 +26,7 @@ async def execute_training(
 
         # 💡 1エポック終わるごとに、外部から渡された「約束の関数（コールバック）」を呼ぶ
         # 自分が今どこにデータを送っているのか（PATCHなのかDBなのか）は知る必要がない
-        await on_step(epoch, loss, current_lr, grad_norm)
+        on_step(epoch, loss, current_lr, grad_norm)
 
     # 最終結果の計算
     total_time_minutes = (time.time() - start_time) / 60.0

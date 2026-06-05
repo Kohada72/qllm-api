@@ -16,7 +16,7 @@ api_url = os.getenv("API_URL")
 client = QLLMApiClient(api_url)
 
 st.set_page_config(page_title="QLLM Control Panel", layout="wide")
-st.title("🧪 Quantum-LLM Experiment Control")
+st.title("Quantum-LLM Experiment Control")
 
 # タブの定義
 tab_run, tab_history = st.tabs(["Run Experiment", "Experiment History"])
@@ -45,7 +45,7 @@ with tab_run:
         n_layers = st.number_input("Layers", 1, 10, 1)
 
     if st.button("Submit Job", type="primary"):
-        # ⭕ 最新のPredictionRequestスキーマに合わせてPayloadのネスト構造を正確にマッピング
+        # 最新のPredictionRequestスキーマに合わせてPayloadのネスト構造を正確にマッピング
         payload = {
             "exp_title": exp_title,
             "train_config": {
@@ -70,7 +70,7 @@ with tab_run:
 with tab_history:
     st.header("Job Management")
     
-    if st.button("🔄 Refresh History"):
+    if st.button("Refresh History"):
         st.rerun()
 
     jobs = client.get_jobs()
@@ -92,7 +92,7 @@ with tab_history:
         if selected_job_id:
             detail = client.get_job_detail(selected_job_id)
             if detail:
-                # ⭕ 削除ボタンを配置するために、カラム数を3から4に増やします
+                # 削除ボタンを配置するために、カラム数を3から4に増やします
                 c1, c2, c3, c4 = st.columns([1, 2, 1, 1]) # 横幅の比率を調整
                 
                 c1.metric("Status", detail["status"])
@@ -100,11 +100,11 @@ with tab_history:
                 current_progress = detail.get("progress") if detail.get("progress") is not None else 0.0
                 c2.progress(current_progress, text=f"Progress: {current_progress*100:.1f}%")
                 
-                # ⭕ c4 の位置に赤色の削除ボタンを配置
+                # c4 の位置に赤色の削除ボタンを配置
                 with c4:
                     st.write("") # 上部の余白調整（メトリクスのラベルと高さを合わせるため）
                     st.write("") 
-                    if st.button("🗑️ Delete Job", type="secondary", help="このジョブを完全に削除します"):
+                    if st.button("Delete Job", type="primary", help="このジョブを完全に削除します"):
                         # clientにdelete_jobメソッドがあると仮定して呼び出す
                         # (もしapi_clientに未実装なら、requests.delete(f"{api_url}/experiments/{selected_job_id}") でも可)
                         try:
@@ -120,7 +120,7 @@ with tab_history:
                 
                 # 完了時のレスポンスデータ構造のパース処理
                 if detail["status"] == "completed":
-                    st.subheader("📊 Experiment Results")
+                    st.subheader("Experiment Results")
                     
                     m1, m2, m3 = st.columns(3)
                     eval_data = detail.get("evaluation", {})
@@ -129,14 +129,14 @@ with tab_history:
                     ppl_value = detail.get("ppl")
                     
                     with m1:
-                        st.metric(label="📉 Eval Loss", value=f"{eval_loss:.4f}")
+                        st.metric(label="Eval Loss", value=f"{eval_loss:.4f}")
                     with m2:
                         if ppl_value is not None:
-                            st.metric(label="🧩 Perplexity", value=f"{ppl_value:.2f}")
+                            st.metric(label="Perplexity", value=f"{ppl_value:.2f}")
                         else:
-                            st.metric(label="🧩 Perplexity", value="N/A")
+                            st.metric(label="Perplexity", value="N/A")
                     with m3:
-                        st.metric(label="⏱️ Total Time", value=f"{total_time:.1f} min")
+                        st.metric(label="Total Time", value=f"{total_time:.1f} min")
 
                     st.divider()
 
@@ -160,7 +160,7 @@ with tab_history:
                         fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
                         
                         st.download_button(
-                            label="📥 Download Graph (PNG)",
+                            label="Download Graph (PNG)",
                             data=buf.getvalue(),
                             file_name=f"plot_{selected_job_id}.png",
                             mime="image/png",

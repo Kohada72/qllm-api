@@ -1,6 +1,6 @@
 services:
   api:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     volumes:
@@ -21,14 +21,3 @@ services:
       - "8501:8501"
     depends_on:
       - api
-
-
-# services:
-#   qllm-api:
-#     build: .
-#     volumes:
-#       - .:/app
-#     ports:
-#       - "8000:8000"
-#     env_file:
-#       - .env

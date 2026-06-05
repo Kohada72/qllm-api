@@ -11,6 +11,10 @@ redis_data/
 *.log
 docker-logs/
 
+# --- DB, Tests ---
+*.db
+test*
+
 # --- Others ---
 __pycache__
 .DS_Store

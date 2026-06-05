@@ -1,3 +1,4 @@
+import asyncio
 import os
 import traceback
 import httpx
@@ -18,7 +19,7 @@ async def run_training_process(job_id: str, request: PredictionRequest):
     history = []
 
     # Trainerに渡すための「進捗報告用コールバック関数」を定義
-    async def progress_callback(epoch: int, loss: float, lr: float, grad_norm: float):
+    def progress_callback(epoch: int, loss: float, lr: float, grad_norm: float):
         # APIの要求仕様に合わせてデータを整形し、historyに蓄積
         progress = epoch / request.train_params.n_epoch
         
@@ -31,8 +32,8 @@ async def run_training_process(job_id: str, request: PredictionRequest):
         history.append(step_data)
 
         # APIへPATCH送信
-        async with httpx.AsyncClient(base_url=API_URL) as client:
-            await client.patch(f"/experiments/{job_id}", json={
+        with httpx.Client(base_url=API_URL) as client:
+            client.patch(f"/experiments/{job_id}", json={
                 "progress": progress,
                 "history": history
             })
@@ -46,7 +47,8 @@ async def run_training_process(job_id: str, request: PredictionRequest):
             
             # 2. スキーマからプリミティブな値を抽出し、純粋な学習ロジックを実行
             #    先ほど定義した progress_callback を渡す
-            result = await execute_training(
+            result = await asyncio.to_thread(
+                execute_training,
                 epochs=request.train_params.n_epoch,
                 lr=request.train_params.lr,
                 model_name=request.model_name,
